@@ -20,17 +20,25 @@ form div {
   display: inline-block;
 }
 
-.boardSize {
-  height: 1024px;
-  width: 1024px;
+.gameBoard {
   margin: auto;
 }
+.boardContainer {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+}
 
-.gameBoard {
+.cell {
+  width: 48px;
+  height: 48px;
+  border: 1px solid black;
+}
+
+.live {
   background-color: blue;
-  display: grid;
-  height: inherit;
-  width: inherit;
-  grid-template-columns: repeat(50, minmax(0, 1fr));
-  grid-template-rows: repeat(50, minmax(0, 1fr));
+}
+
+.flex {
+  display: flex;
 }
