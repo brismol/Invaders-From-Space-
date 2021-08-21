@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 
-export const Cell = ({ coordinates }) => {
+export const Cell = ({ coordinates, alien1 }) => {
   const [live, setlive] = useState(false);
-  console.log(coordinates);
+  const [location, setlocation] = useState('');
 
   const color = () => {
-    console.log(coordinates);
+    setlocation(coordinates);
     setlive(!live);
   };
 
   let classes = 'cell';
-  if (live) {
+  if (alien1.includes(coordinates.join(''))) {
     classes = classes + ' live';
   }
 
-  return <div className={classes} onClick={color}></div>;
+  return (
+    <div className={classes} onClick={color}>
+      {location}
+    </div>
+  );
 };
