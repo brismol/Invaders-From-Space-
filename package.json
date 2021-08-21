@@ -1,7 +1,7 @@
 {
-  "name": "fs-app-template",
+  "name": "invaders-from-space",
   "version": "2.0.0",
-  "description": "Some boilerplate code to get you started - get shakin'!",
+  "description": "Reverse engineered space invaders built in React!",
   "main": "index.js",
   "scripts": {
     "build": "webpack",
