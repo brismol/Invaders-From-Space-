@@ -10,7 +10,7 @@ export const Cell = ({ coordinates, alien1 }) => {
   };
 
   let classes = 'cell';
-  if (alien1.includes(coordinates.join(''))) {
+  if (alien1.includes(coordinates.join(','))) {
     classes = classes + ' live';
   }
 

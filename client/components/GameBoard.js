@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Cell } from './Cell';
+import { useInterval } from './utils/useInterval';
 
 export const GameBoard = () => {
   const board = new Array(20).fill('').map((row) => {
     return new Array(50).fill('');
   });
 
-  const alien1 = [
+  const mob = [
     [1, 5],
     [1, 9],
     [2, 4],
@@ -51,22 +52,49 @@ export const GameBoard = () => {
     [7, 9],
   ];
 
-  const stringAlien1 = alien1.map((coord) => coord.join(''));
+  const [alien, setAlien] = useState([]);
+
+  //coordinates to strings making 112 could be 1,12 or 11, 2 etc... try converting to object
+
+  useEffect(() => {
+    const moveMob = setInterval(() => {
+      if (alien.length) {
+        const newAlien = alien.map((coord) => [coord[0], coord[1] + 1]);
+        setAlien(newAlien);
+      } else {
+        setAlien(mob);
+      }
+    });
+  });
+
+  //   const moveMob = () => {
+
+  //   };
+
   return (
-    <div className="boardContainer">
-      {board.map((row, ridx) => {
-        return (
-          <div className="flex gameBoard" key={ridx}>
-            {row.map((cell, cidx) => (
-              <Cell
-                key={[ridx, cidx]}
-                coordinates={[ridx, cidx]}
-                alien1={stringAlien1}
-              />
-            ))}
-          </div>
-        );
-      })}
+    <div>
+      <button
+        onClick={() => {
+          moveMob();
+        }}
+      >
+        start
+      </button>
+      <div className="boardContainer">
+        {board.map((row, ridx) => {
+          return (
+            <div className="flex gameBoard" key={ridx}>
+              {row.map((cell, cidx) => (
+                <Cell
+                  key={[ridx, cidx]}
+                  coordinates={[ridx, cidx]}
+                  alien1={alien.map((coord) => coord.join(','))}
+                />
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
