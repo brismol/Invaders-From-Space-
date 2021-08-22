@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { GameBoard } from './GameBoard';
+import GameBoard from './GameBoard';
 
 /**
  * COMPONENT
