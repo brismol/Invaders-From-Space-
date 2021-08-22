@@ -42,3 +42,9 @@ form div {
 .flex {
   display: flex;
 }
+
+canvas {
+  background: #eee;
+  display: block;
+  margin: 0 auto;
+}
