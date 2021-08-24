@@ -15,7 +15,20 @@ class Invaders extends Component {
       rows: 5,
       columns: 11,
       aliens: [],
-      monsters: { x: 0, y: 0, mx: 11, my: 14 },
+      monsters: {
+        rowCount: 0,
+        rows: {
+          0: { x: 0, y: 0 },
+          1: { x: 0, y: 0 },
+          2: { x: 0, y: 0 },
+          3: { x: 0, y: 0 },
+          4: { x: 0, y: 0 },
+        },
+        x: 0,
+        y: 0,
+        mx: 11,
+        my: 14,
+      },
       moveCount: 0,
       ship: {
         shipHeight: 10,
@@ -27,6 +40,7 @@ class Invaders extends Component {
         rightPressed: false,
         leftPressed: false,
       },
+      bullets: [],
     };
     this.canvasRef = React.createRef();
     this.drawAlien1 = this.drawAliens.bind(this);
@@ -40,6 +54,9 @@ class Invaders extends Component {
     this.drawShip = this.drawShip.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.keyUpHandler = this.keyUpHandler.bind(this);
+    this.moveAliens = this.moveAliens.bind(this);
+    this.drawBullets = this.drawBullets.bind(this);
+    this.keyPressHandler = this.keyPressHandler.bind(this);
   }
 
   componentDidMount() {
@@ -60,9 +77,9 @@ class Invaders extends Component {
     //control mount
     window.addEventListener('keydown', this.keyDownHandler, false);
     window.addEventListener('keyup', this.keyUpHandler, false);
+    window.addEventListener('keypress', this.keyPressHandler);
 
     this.draw();
-    // this.alien3b(0, 0);
   }
 
   keyDownHandler(e) {
@@ -81,24 +98,62 @@ class Invaders extends Component {
     }
   }
 
+  keyPressHandler(e) {
+    if (e.key == 'z') {
+      this.state.bullets.push([
+        this.state.ship.shipX + this.state.ship.shipWidth / 2 - 2,
+        this.state.canvas.height - (this.state.ship.shipHeight + 22),
+      ]);
+      console.log(this.state.bullets);
+    }
+  }
+
   draw(inGame) {
     this.state.frameCount++;
     let { ctx } = this.state;
     ctx.clearRect(0, 0, this.state.canvas.width, this.state.canvas.height);
     this.drawAliens(inGame);
     //change moveCount t0 50 after Nick comes
+    this.moveAliens();
+    this.drawShip();
+    this.drawBullets();
+  }
+
+  moveAliens() {
     if (this.state.frameCount === 50) {
       this.state.frameCount = 0;
-      if (this.state.moveCount === 10) {
-        this.state.moveCount = 0;
+      if (this.state.moveCount === 50) {
+        this.state.moveCount = -1;
         this.state.monsters.mx = -this.state.monsters.mx;
         this.state.monsters.y += this.state.monsters.my;
       } else {
-        this.state.monsters.x += this.state.monsters.mx;
+        switch (this.state.moveCount % 5) {
+          case 0:
+            this.state.monsters.rows['0'].x += this.state.monsters.mx;
+            break;
+
+          case 1:
+            this.state.monsters.rows['1'].x += this.state.monsters.mx;
+            break;
+
+          case 2:
+            this.state.monsters.rows['2'].x += this.state.monsters.mx;
+            break;
+
+          case 3:
+            this.state.monsters.rows['3'].x += this.state.monsters.mx;
+            break;
+
+          case 4:
+            this.state.monsters.rows['4'].x += this.state.monsters.mx;
+            break;
+
+          default:
+            break;
+        }
       }
       this.state.moveCount++;
     }
-    this.drawShip();
   }
 
   drawAliens(inGame) {
@@ -117,18 +172,29 @@ class Invaders extends Component {
         this.state.aliens[c][r].y = alienY;
         if (r === 0) {
           this.state.moveCount % 2
-            ? this.alien3b(alienX, alienY)
-            : this.alien3(alienX, alienY);
+            ? this.alien3b(alienX + this.state.monsters.rows['0'].x, alienY)
+            : this.alien3(alienX + this.state.monsters.rows['0'].x, alienY);
         }
-        if (r === 1 || r === 2) {
+        if (r === 1) {
           this.state.moveCount % 2
-            ? this.alien1b(alienX, alienY)
-            : this.alien1(alienX, alienY);
+            ? this.alien1b(alienX + this.state.monsters.rows['1'].x, alienY)
+            : this.alien1(alienX + this.state.monsters.rows['1'].x, alienY);
         }
-        if (r === 3 || r === 4) {
+        if (r === 2) {
           this.state.moveCount % 2
-            ? this.alien2b(alienX, alienY)
-            : this.alien2(alienX, alienY);
+            ? this.alien1b(alienX + this.state.monsters.rows['2'].x, alienY)
+            : this.alien1(alienX + this.state.monsters.rows['2'].x, alienY);
+        }
+        if (r === 3) {
+          this.state.moveCount % 2
+            ? this.alien2b(alienX + this.state.monsters.rows['3'].x, alienY)
+            : this.alien2(alienX + this.state.monsters.rows['3'].x, alienY);
+        }
+
+        if (r === 4) {
+          this.state.moveCount % 2
+            ? this.alien2b(alienX + this.state.monsters.rows['4'].x, alienY)
+            : this.alien2(alienX + +this.state.monsters.rows['4'].x, alienY);
         }
       }
     }
@@ -366,11 +432,22 @@ class Invaders extends Component {
     }
   }
 
-  //   ship: {
-  //     shipHeight: 10,
-  //     shipWidth: 30,
-  //     shipX: 0,
-  //   },
+  drawBullets() {
+    const { canvas, ctx, bullets } = this.state;
+    for (let i = 0; i < bullets.length; i++) {
+      ctx.beginPath();
+      ctx.rect(bullets[i][0], bullets[i][1], 4, 6);
+
+      ctx.fillStyle = 'green';
+      ctx.fill();
+      ctx.closePath();
+      this.state.bullets[i][1] -= 2;
+      if (this.state.bullets[i][1] < 0) {
+        this.state.bullets.splice(i, 1);
+      }
+    }
+  }
+
   render() {
     return (
       <div>
