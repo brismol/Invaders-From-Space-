@@ -44,3 +44,59 @@ const mob = [
 [7, 5],
 [7, 9],
 ];
+
+LineTo alien1
+ctx.beginPath();
+ctx.moveTo(0, 70);
+ctx.lineTo(0, 40);
+ctx.lineTo(10, 40);
+ctx.lineTo(10, 30);
+ctx.lineTo(20, 30);
+ctx.lineTo(20, 20);
+ctx.lineTo(30, 20);
+ctx.lineTo(30, 10);
+ctx.lineTo(20, 10);
+ctx.lineTo(20, 0);
+ctx.lineTo(30, 0);
+ctx.lineTo(30, 10);
+ctx.lineTo(40, 10);
+ctx.lineTo(40, 20);
+ctx.lineTo(70, 20);
+ctx.lineTo(70, 10);
+ctx.lineTo(80, 10);
+ctx.lineTo(80, 0);
+ctx.lineTo(90, 0);
+ctx.lineTo(90, 10);
+ctx.lineTo(80, 10);
+ctx.lineTo(80, 20);
+ctx.lineTo(90, 20);
+ctx.lineTo(90, 30);
+ctx.lineTo(100, 30);
+ctx.lineTo(100, 40);
+ctx.lineTo(110, 40);
+ctx.lineTo(110, 70);
+ctx.lineTo(100, 70);
+ctx.lineTo(100, 50);
+ctx.lineTo(90, 50);
+ctx.lineTo(90, 70);
+ctx.lineTo(80, 70);
+ctx.lineTo(80, 80);
+ctx.lineTo(60, 80);
+ctx.lineTo(60, 70);
+ctx.lineTo(80, 70);
+ctx.lineTo(80, 60);
+ctx.lineTo(30, 60);
+ctx.lineTo(30, 70);
+ctx.lineTo(50, 70);
+ctx.lineTo(50, 80);
+ctx.lineTo(30, 80);
+ctx.lineTo(30, 70);
+ctx.lineTo(20, 70);
+ctx.lineTo(20, 50);
+ctx.lineTo(10, 50);
+ctx.lineTo(10, 70);
+
+    ctx.fillStyle = '#0095DD';
+    // ctx.stroke();
+    ctx.fill();
+    ctx.closePath();

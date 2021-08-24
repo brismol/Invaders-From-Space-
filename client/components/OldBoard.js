@@ -1,6 +1,5 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
 import { Cell } from './Cell';
-import { useInterval } from './utils/useInterval';
 
 class GameBoard extends Component {
   constructor() {
@@ -8,8 +7,8 @@ class GameBoard extends Component {
     this.state = {
       rows: 80,
       cols: 200,
-      board: new Array(160).fill('').map((row) => {
-        return new Array(160).fill('');
+      board: new Array(20).fill('').map((row) => {
+        return new Array(20).fill('');
       }),
       alien: [
         [1, 5],

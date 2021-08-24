@@ -9,9 +9,13 @@ export const Cell = ({ coordinates, alien1 }) => {
     setlive(!live);
   };
 
+  // if (alien1.includes(coordinates.join(','))) {
+  //   classes = classes + ' live';
+  // }
+
   let classes = 'cell';
-  if (alien1.includes(coordinates.join(','))) {
-    classes = classes + ' live';
+  if (live) {
+    classes = 'cell live';
   }
 
   return (
