@@ -6,7 +6,7 @@ import BrickBreakers from './components/BrickBreakers';
 import OldBoard from './components/OldBoard';
 import Home from './components/Home';
 import { me } from './store';
-import DrawingBoard from './components/utils/DrawingBoard';
+import Invaders from './components/Invaders';
 
 /**
  * COMPONENT
@@ -26,7 +26,7 @@ class Routes extends Component {
             <Route path="/home" component={Home} />
             <Route path="/brickbreakers" component={BrickBreakers} />
             <Route path="/oldboard" component={OldBoard} />
-            <Route path="/drawingboard" component={DrawingBoard} />
+            <Route path="/invaders" component={Invaders} />
           </Switch>
         ) : (
           <Switch>

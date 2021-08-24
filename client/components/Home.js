@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import BrickBreakers from './BrickBreakers';
 
 const Home = ({ username }) => {
   return (
@@ -16,7 +15,7 @@ const Home = ({ username }) => {
         <Link to="/oldboard">Show old board</Link>
       </div>
       <div>
-        <Link to="/drawingboard">Drawing Board</Link>
+        <Link to="/invaders">Invaders From Space!</Link>
       </div>
     </div>
   );

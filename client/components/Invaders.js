@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class DrawingBoard extends Component {
+class Invaders extends Component {
   constructor() {
     super();
 
@@ -9,7 +9,7 @@ class DrawingBoard extends Component {
       ctx: {},
       padding: 10,
       alien1: {
-        width: 22,
+        width: 24,
         height: 14,
       },
       rows: 5,
@@ -31,8 +31,11 @@ class DrawingBoard extends Component {
     this.canvasRef = React.createRef();
     this.drawAlien1 = this.drawAliens.bind(this);
     this.alien1 = this.alien1.bind(this);
+    this.alien1b = this.alien1b.bind(this);
     this.alien2 = this.alien2.bind(this);
+    this.alien2b = this.alien2b.bind(this);
     this.alien3 = this.alien3.bind(this);
+    this.alien3b = this.alien3b.bind(this);
     this.draw = this.draw.bind(this);
     this.drawShip = this.drawShip.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
@@ -59,6 +62,7 @@ class DrawingBoard extends Component {
     window.addEventListener('keyup', this.keyUpHandler, false);
 
     this.draw();
+    // this.alien3b(0, 0);
   }
 
   keyDownHandler(e) {
@@ -112,13 +116,19 @@ class DrawingBoard extends Component {
         this.state.aliens[c][r].x = alienX;
         this.state.aliens[c][r].y = alienY;
         if (r === 0) {
-          this.alien3(alienX, alienY);
+          this.state.moveCount % 2
+            ? this.alien3b(alienX, alienY)
+            : this.alien3(alienX, alienY);
         }
         if (r === 1 || r === 2) {
-          this.alien1(alienX, alienY);
+          this.state.moveCount % 2
+            ? this.alien1b(alienX, alienY)
+            : this.alien1(alienX, alienY);
         }
         if (r === 3 || r === 4) {
-          this.alien2(alienX, alienY);
+          this.state.moveCount % 2
+            ? this.alien2b(alienX, alienY)
+            : this.alien2(alienX, alienY);
         }
       }
     }
@@ -128,23 +138,72 @@ class DrawingBoard extends Component {
     const { ctx } = this.state;
     const { x, y } = this.state.monsters;
     ctx.beginPath();
+    //left arm
     ctx.rect(0 + x + ax, 8 + y + ay, 2, 6);
+    //left shoulder
     ctx.rect(2 + x + ax, 6 + y + ay, 2, 4);
-    ctx.rect(4 + x + ax, 4 + y + ay, 14, 8);
-    ctx.rect(18 + x + ax, 6 + y + ay, 2, 4);
-    ctx.rect(20 + x + ax, 8 + y + ay, 2, 6);
+    //body
+    ctx.rect(4 + x + ax, 4 + y + ay, 16, 8);
+    //right shoulder
+    ctx.rect(20 + x + ax, 6 + y + ay, 2, 4);
+    //right arm
+    ctx.rect(22 + x + ax, 8 + y + ay, 2, 6);
+
+    //left ear
     ctx.rect(6 + x + ax, 2 + y + ay, 2, 2);
-    ctx.rect(14 + x + ax, 2 + y + ay, 2, 2);
+    ctx.rect(4 + x + ax, 0 + y + ay, 2, 2);
+
+    //right ear bottom
+    ctx.rect(16 + x + ax, 2 + y + ay, 2, 2);
+    ctx.rect(18 + x + ax, 0 + y + ay, 2, 2);
+    //left fang
     ctx.rect(4 + x + ax, 12 + y + ay, 2, 2);
     ctx.rect(6 + x + ax, 14 + y + ay, 4, 2);
-    ctx.rect(16 + x + ax, 12 + y + ay, 2, 2);
-    ctx.rect(12 + x + ax, 14 + y + ay, 4, 2);
-    ctx.rect(4 + x + ax, 0 + y + ay, 2, 2);
-    ctx.rect(16 + x + ax, 0 + y + ay, 2, 2);
+    //right fang
+    ctx.rect(18 + x + ax, 12 + y + ay, 2, 2);
+    ctx.rect(14 + x + ax, 14 + y + ay, 4, 2);
+
     ctx.fillStyle = '#0095DD';
     ctx.fill();
     ctx.clearRect(6 + x + ax, 6 + y + ay, 2, 2);
-    ctx.clearRect(14 + x + ax, 6 + y + ay, 2, 2);
+    ctx.clearRect(16 + x + ax, 6 + y + ay, 2, 2);
+
+    ctx.closePath();
+  }
+
+  alien1b(ax, ay) {
+    const { ctx } = this.state;
+    const { x, y } = this.state.monsters;
+    ctx.beginPath();
+    //left arm
+    ctx.rect(0 + x + ax, 2 + y + ay, 2, 8);
+    //left shoulder
+    ctx.rect(2 + x + ax, 6 + y + ay, 2, 6);
+    //body
+    ctx.rect(4 + x + ax, 4 + y + ay, 16, 8);
+    //right shoulder
+    ctx.rect(20 + x + ax, 6 + y + ay, 2, 6);
+    //right arm
+    ctx.rect(22 + x + ax, 2 + y + ay, 2, 8);
+
+    //left ear
+    ctx.rect(6 + x + ax, 2 + y + ay, 2, 2);
+    ctx.rect(4 + x + ax, 0 + y + ay, 2, 2);
+
+    //right ear bottom
+    ctx.rect(16 + x + ax, 2 + y + ay, 2, 2);
+    ctx.rect(18 + x + ax, 0 + y + ay, 2, 2);
+    //left fang
+    ctx.rect(4 + x + ax, 12 + y + ay, 2, 2);
+    ctx.rect(2 + x + ax, 14 + y + ay, 2, 2);
+    //right fang
+    ctx.rect(18 + x + ax, 12 + y + ay, 2, 2);
+    ctx.rect(20 + x + ax, 14 + y + ay, 2, 2);
+
+    ctx.fillStyle = '#0095DD';
+    ctx.fill();
+    ctx.clearRect(6 + x + ax, 6 + y + ay, 2, 2);
+    ctx.clearRect(16 + x + ax, 6 + y + ay, 2, 2);
 
     ctx.closePath();
   }
@@ -154,24 +213,60 @@ class DrawingBoard extends Component {
     const { x, y } = this.state.monsters;
     ctx.beginPath();
 
-    ctx.rect(0 + x + ax, 4 + y + ay, 22, 6);
-    ctx.rect(2 + x + ax, 2 + y + ay, 18, 2);
-    ctx.rect(8 + x + ax, 0 + y + ay, 6, 2);
+    //body
+    ctx.rect(0 + x + ax, 4 + y + ay, 24, 6);
+    ctx.rect(2 + x + ax, 2 + y + ay, 20, 2);
+    ctx.rect(8 + x + ax, 0 + y + ay, 8, 2);
+
+    //Left arm
     ctx.rect(6 + x + ax, 10 + y + ay, 4, 2);
-    ctx.rect(12 + x + ax, 10 + y + ay, 4, 2);
-
     ctx.rect(4 + x + ax, 12 + y + ay, 4, 2);
-    ctx.rect(14 + x + ax, 12 + y + ay, 4, 2);
-
     ctx.rect(0 + x + ax, 14 + y + ay, 4, 2);
-    ctx.rect(18 + x + ax, 14 + y + ay, 4, 2);
 
-    ctx.rect(10 + x + ax, 12 + y + ay, 2, 2);
+    //right arm
+    ctx.rect(14 + x + ax, 10 + y + ay, 4, 2);
+    ctx.rect(16 + x + ax, 12 + y + ay, 4, 2);
+    ctx.rect(20 + x + ax, 14 + y + ay, 4, 2);
+
+    //mouth?
+    ctx.rect(10 + x + ax, 12 + y + ay, 4, 2);
 
     ctx.fillStyle = '#FF0000';
     ctx.fill();
 
-    ctx.clearRect(4 + x + ax, 6 + y + ay, 4, 2);
+    ctx.clearRect(6 + x + ax, 6 + y + ay, 4, 2);
+    ctx.clearRect(14 + x + ax, 6 + y + ay, 4, 2);
+
+    ctx.closePath();
+  }
+
+  alien2b(ax, ay) {
+    const { ctx } = this.state;
+    const { x, y } = this.state.monsters;
+    ctx.beginPath();
+
+    //body
+    ctx.rect(0 + x + ax, 4 + y + ay, 24, 6);
+    ctx.rect(2 + x + ax, 2 + y + ay, 20, 2);
+    ctx.rect(8 + x + ax, 0 + y + ay, 8, 2);
+
+    //Left arm
+    ctx.rect(4 + x + ax, 10 + y + ay, 6, 2);
+    ctx.rect(2 + x + ax, 12 + y + ay, 4, 2);
+    ctx.rect(4 + x + ax, 14 + y + ay, 4, 2);
+
+    //right arm
+    ctx.rect(14 + x + ax, 10 + y + ay, 6, 2);
+    ctx.rect(18 + x + ax, 12 + y + ay, 4, 2);
+    ctx.rect(16 + x + ax, 14 + y + ay, 4, 2);
+
+    //mouth?
+    ctx.rect(10 + x + ax, 12 + y + ay, 4, 2);
+
+    ctx.fillStyle = '#FF0000';
+    ctx.fill();
+
+    ctx.clearRect(6 + x + ax, 6 + y + ay, 4, 2);
     ctx.clearRect(14 + x + ax, 6 + y + ay, 4, 2);
 
     ctx.closePath();
@@ -181,28 +276,62 @@ class DrawingBoard extends Component {
     const { ctx } = this.state;
     const { x, y } = this.state.monsters;
     ctx.beginPath();
-    ctx.rect(4 + x + ax, 6 + y + ay, 14, 4);
-    ctx.rect(6 + x + ax, 4 + y + ay, 10, 2);
-    ctx.rect(8 + x + ax, 2 + y + ay, 6, 2);
-    ctx.rect(10 + x + ax, 0 + y + ay, 2, 2);
+    //body
+    ctx.rect(4 + x + ax, 6 + y + ay, 16, 4);
+    ctx.rect(6 + x + ax, 4 + y + ay, 12, 2);
+    ctx.rect(8 + x + ax, 2 + y + ay, 8, 2);
+    ctx.rect(10 + x + ax, 0 + y + ay, 4, 2);
 
+    //left tentacle
     ctx.rect(8 + x + ax, 10 + y + ay, 2, 2);
-    ctx.rect(12 + x + ax, 10 + y + ay, 2, 2);
-
     ctx.rect(6 + x + ax, 12 + y + ay, 2, 2);
-    ctx.rect(10 + x + ax, 12 + y + ay, 2, 2);
-    ctx.rect(14 + x + ax, 12 + y + ay, 2, 2);
-
     ctx.rect(4 + x + ax, 14 + y + ay, 2, 2);
     ctx.rect(8 + x + ax, 14 + y + ay, 2, 2);
-    ctx.rect(12 + x + ax, 14 + y + ay, 2, 2);
-    ctx.rect(16 + x + ax, 14 + y + ay, 2, 2);
+    //right tentacle
+    ctx.rect(14 + x + ax, 10 + y + ay, 2, 2);
+    ctx.rect(16 + x + ax, 12 + y + ay, 2, 2);
+    ctx.rect(14 + x + ax, 14 + y + ay, 2, 2);
+    ctx.rect(18 + x + ax, 14 + y + ay, 2, 2);
+    //mouth?
+    ctx.rect(10 + x + ax, 12 + y + ay, 4, 2);
 
     ctx.fillStyle = 'purple';
     ctx.fill();
 
     ctx.clearRect(8 + x + ax, 6 + y + ay, 2, 2);
-    ctx.clearRect(12 + x + ax, 6 + y + ay, 2, 2);
+    ctx.clearRect(14 + x + ax, 6 + y + ay, 2, 2);
+
+    ctx.closePath();
+  }
+
+  alien3b(ax, ay) {
+    const { ctx } = this.state;
+    const { x, y } = this.state.monsters;
+    ctx.beginPath();
+    //body
+    ctx.rect(4 + x + ax, 6 + y + ay, 16, 4);
+    ctx.rect(6 + x + ax, 4 + y + ay, 12, 2);
+    ctx.rect(8 + x + ax, 2 + y + ay, 8, 2);
+    ctx.rect(10 + x + ax, 0 + y + ay, 4, 2);
+
+    //left tentacle
+    ctx.rect(6 + x + ax, 10 + y + ay, 2, 2);
+    ctx.rect(4 + x + ax, 12 + y + ay, 2, 2);
+    ctx.rect(6 + x + ax, 14 + y + ay, 2, 2);
+
+    //right tentacle
+    ctx.rect(16 + x + ax, 10 + y + ay, 2, 2);
+    ctx.rect(18 + x + ax, 12 + y + ay, 2, 2);
+    ctx.rect(16 + x + ax, 14 + y + ay, 2, 2);
+
+    //mouth?
+    ctx.rect(10 + x + ax, 10 + y + ay, 4, 2);
+
+    ctx.fillStyle = 'purple';
+    ctx.fill();
+
+    ctx.clearRect(8 + x + ax, 6 + y + ay, 2, 2);
+    ctx.clearRect(14 + x + ax, 6 + y + ay, 2, 2);
 
     ctx.closePath();
   }
@@ -257,12 +386,12 @@ class DrawingBoard extends Component {
         <canvas
           id="MyCanvas"
           ref={this.canvasRef}
-          width="480"
-          height="320"
+          width="500"
+          height="340"
         ></canvas>
       </div>
     );
   }
 }
 
-export default DrawingBoard;
+export default Invaders;

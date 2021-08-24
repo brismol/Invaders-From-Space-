@@ -5,7 +5,7 @@ export const Cell = ({ coordinates, alien1 }) => {
   const [location, setlocation] = useState('');
 
   const color = () => {
-    setlocation(coordinates);
+    // setlocation(coordinates);
     setlive(!live);
   };
 
