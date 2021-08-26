@@ -7,8 +7,8 @@ class GameBoard extends Component {
     this.state = {
       rows: 80,
       cols: 200,
-      board: new Array(20).fill('').map((row) => {
-        return new Array(20).fill('');
+      board: new Array(30).fill('').map((row) => {
+        return new Array(30).fill('');
       }),
       alien: [
         [1, 5],
