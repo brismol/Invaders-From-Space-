@@ -12,6 +12,7 @@ class Invaders extends Component {
         width: 24,
         height: 14,
       },
+      laserCount: 0,
       rows: 5,
       columns: 11,
       aliens: [],
@@ -31,9 +32,12 @@ class Invaders extends Component {
       },
       moveCount: 0,
       ship: {
+        explosion: [],
+        alive: true,
         shipHeight: 10,
-        shipWidth: 30,
+        shipWidth: 28,
         shipX: 0,
+        shipY: 0,
       },
       frameCount: 0,
       controls: {
@@ -41,6 +45,8 @@ class Invaders extends Component {
         leftPressed: false,
       },
       bullets: [],
+      bulletReady: true,
+      lasers: [],
       explosions: [],
       barrierPadding: 60,
       debris: [],
@@ -185,6 +191,9 @@ class Invaders extends Component {
     this.drawExplosions = this.drawExplosions.bind(this);
     this.drawBarriers = this.drawBarriers.bind(this);
     this.drawDebris = this.drawDebris.bind(this);
+    this.drawLasers = this.drawLasers.bind(this);
+    this.fireLaser = this.fireLaser.bind(this);
+    this.drawShipExplosion = this.drawShipExplosion.bind(this);
     // this.practiceDraw = this.practiceDraw.bind(this);
   }
 
@@ -206,6 +215,7 @@ class Invaders extends Component {
 
     //ship Mount
     this.state.ship.shipX = (canvas.width - this.state.ship.shipWidth) / 2;
+    this.state.ship.shipY = canvas.height - this.state.ship.shipHeight - 4;
 
     //control mount
     window.addEventListener('keydown', this.keyDownHandler, false);
@@ -213,10 +223,7 @@ class Invaders extends Component {
     window.addEventListener('keypress', this.keyPressHandler);
 
     this.draw();
-    // this.drawBarriers();
-
-    // this.practiceDraw();
-    // this.alien1(0, 0);
+    // this.drawShipExplosion();
   }
 
   keyDownHandler(e) {
@@ -236,12 +243,15 @@ class Invaders extends Component {
   }
 
   keyPressHandler(e) {
-    if (e.key == 'z') {
+    if (e.key == 'z' && this.state.bulletReady) {
       this.state.bullets.push([
         this.state.ship.shipX + this.state.ship.shipWidth / 2 - 2,
         this.state.canvas.height - (this.state.ship.shipHeight + 12),
       ]);
-      console.log(this.state.bullets);
+      this.state.bulletReady = false;
+      setTimeout(() => {
+        this.state.bulletReady = true;
+      }, 500);
     }
   }
 
@@ -316,20 +326,46 @@ class Invaders extends Component {
     this.drawExplosions();
     this.drawBarriers();
     this.drawDebris();
+    this.drawLasers();
+    this.drawShipExplosion();
   }
 
   moveAliens() {
+    const { moveCount } = this.state;
+
     //num is alien speed
     if (this.state.frameCount === 40) {
+      this.state.laserCount++;
+      if (this.state.laserCount === 4) {
+        this.state.laserCount = 0;
+        this.fireLaser();
+      }
       this.state.frameCount = 0;
       //still gotta mess with the numbers
-      if (this.state.monsters.rowCount === 11) {
-        this.state.monsters.rowCount = 0;
+      if (this.state.monsters.rowCount === 4) {
+        this.state.monsters.rowCount = -1;
       }
-      if (this.state.moveCount === 50) {
-        this.state.moveCount = -1;
-        this.state.monsters.mx = -this.state.monsters.mx;
-        this.state.monsters.y += this.state.monsters.my;
+      if (moveCount < 0) {
+        switch (moveCount) {
+          case -5:
+            this.state.monsters.rows['0'].y += this.state.monsters.my;
+            break;
+          case -4:
+            this.state.monsters.rows['1'].y += this.state.monsters.my;
+            break;
+          case -3:
+            this.state.monsters.rows['2'].y += this.state.monsters.my;
+            break;
+          case -2:
+            this.state.monsters.rows['3'].y += this.state.monsters.my;
+            break;
+          case -1:
+            this.state.monsters.rows['4'].y += this.state.monsters.my;
+            break;
+
+          default:
+            break;
+        }
       } else {
         switch (this.state.moveCount % 5) {
           case 0:
@@ -357,6 +393,11 @@ class Invaders extends Component {
         }
       }
       this.state.moveCount++;
+      if (this.state.moveCount === 50) {
+        this.state.moveCount = -5;
+
+        this.state.monsters.mx = -this.state.monsters.mx;
+      }
       this.state.monsters.rowCount++;
     }
   }
@@ -367,6 +408,7 @@ class Invaders extends Component {
       canvas,
       alien1: { width, height },
       aliens,
+      monsters: { rowCount },
     } = this.state;
     const w = this.state.padding;
     for (let c = 0; c < this.state.columns; c++) {
@@ -374,43 +416,49 @@ class Invaders extends Component {
         if (aliens[c][r].status === 1) {
           let alienX = c * (width + w) + w;
           let alienY = r * (height + w) + w;
-          // this.state.aliens[c][r].x = alienX;
-          this.state.aliens[c][r].y = alienY;
           if (r === 0) {
-            //still gotta mess with the numbers
+            alienY += this.state.monsters.rows['4'].y;
+            this.state.aliens[c][r].y = alienY;
             alienX += this.state.monsters.rows['4'].x;
             this.state.aliens[c][r].x = alienX;
-            this.state.monsters.rowCount > 9 || this.state.monsters.rowCount < 5
+            rowCount === 4
               ? this.alien3b(alienX, alienY)
               : this.alien3(alienX, alienY);
           }
           if (r === 1) {
+            alienY += this.state.monsters.rows['3'].y;
+            this.state.aliens[c][r].y = alienY;
             alienX += this.state.monsters.rows['3'].x;
             this.state.aliens[c][r].x = alienX;
-            this.state.monsters.rowCount > 8 || this.state.monsters.rowCount < 4
+            rowCount === 3
               ? this.alien1b(alienX, alienY)
               : this.alien1(alienX, alienY);
           }
           if (r === 2) {
+            alienY += this.state.monsters.rows['2'].y;
+            this.state.aliens[c][r].y = alienY;
             alienX += this.state.monsters.rows['2'].x;
             this.state.aliens[c][r].x = alienX;
-            this.state.monsters.rowCount > 7 || this.state.monsters.rowCount < 3
+            rowCount === 2
               ? this.alien1b(alienX, alienY)
               : this.alien1(alienX, alienY);
           }
           if (r === 3) {
+            alienY += this.state.monsters.rows['1'].y;
+            this.state.aliens[c][r].y = alienY;
             alienX += this.state.monsters.rows['1'].x;
             this.state.aliens[c][r].x = alienX;
-            this.state.monsters.rowCount > 6 || this.state.monsters.rowCount < 2
+            rowCount === 1
               ? this.alien2b(alienX, alienY)
               : this.alien2(alienX, alienY);
           }
 
           if (r === 4) {
+            alienY += this.state.monsters.rows['0'].y;
+            this.state.aliens[c][r].y = alienY;
             alienX += this.state.monsters.rows['0'].x;
             this.state.aliens[c][r].x = alienX;
-            this.state.monsters.rowCount > 5 ||
-            this.state.monsters.rowCount === 0
+            rowCount === 0
               ? this.alien2b(alienX, alienY)
               : this.alien2(alienX, alienY);
           }
@@ -628,26 +676,28 @@ class Invaders extends Component {
       controls: { rightPressed, leftPressed },
       ship: { shipWidth, shipHeight },
     } = this.state;
-    const y = this.state.canvas.height - this.state.ship.shipHeight - 4;
-    const x = this.state.ship.shipX;
-    ctx.beginPath();
-    ctx.rect(x, y, 28, 6);
-    ctx.rect(x + 2, y - 2, 24, 2);
-    ctx.rect(x + 2, y + 6, 24, 2);
-    ctx.rect(x + 11, y - 6, 6, 4);
-    ctx.rect(x + 13, y - 8, 2, 2);
-    ctx.fillStyle = 'green';
-    ctx.fill();
-    ctx.closePath();
-    if (rightPressed) {
-      this.state.ship.shipX += 2;
-      if (this.state.ship.shipX + shipWidth > canvas.width) {
-        this.state.ship.shipX = canvas.width - shipWidth;
-      }
-    } else if (leftPressed) {
-      this.state.ship.shipX -= 2;
-      if (this.state.ship.shipX < 0) {
-        this.state.ship.shipX = 0;
+    if (this.state.ship.alive) {
+      const y = this.state.ship.shipY;
+      const x = this.state.ship.shipX;
+      ctx.beginPath();
+      ctx.rect(x, y, 28, 6);
+      ctx.rect(x + 2, y - 2, 24, 2);
+      ctx.rect(x + 2, y + 6, 24, 2);
+      ctx.rect(x + 11, y - 6, 6, 4);
+      ctx.rect(x + 13, y - 8, 2, 2);
+      ctx.fillStyle = 'green';
+      ctx.fill();
+      ctx.closePath();
+      if (rightPressed) {
+        this.state.ship.shipX += 2;
+        if (this.state.ship.shipX + shipWidth > canvas.width) {
+          this.state.ship.shipX = canvas.width - shipWidth;
+        }
+      } else if (leftPressed) {
+        this.state.ship.shipX -= 2;
+        if (this.state.ship.shipX < 0) {
+          this.state.ship.shipX = 0;
+        }
       }
     }
   }
@@ -668,6 +718,38 @@ class Invaders extends Component {
     }
   }
 
+  drawLasers() {
+    const { canvas, ctx, lasers } = this.state;
+    for (let i = 0; i < lasers.length; i++) {
+      if (lasers[i][2]) {
+        ctx.beginPath();
+        ctx.rect(lasers[i][0] - 1, lasers[i][1], 2, 2);
+        ctx.rect(lasers[i][0] + 1, lasers[i][1] + 2, 2, 2);
+        ctx.rect(lasers[i][0] - 1, lasers[i][1] + 4, 2, 2);
+        ctx.rect(lasers[i][0] + 1, lasers[i][1] + 6, 2, 2);
+
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.rect(lasers[i][0] + 1, lasers[i][1], 2, 2);
+        ctx.rect(lasers[i][0] - 1, lasers[i][1] + 2, 2, 2);
+        ctx.rect(lasers[i][0] + 1, lasers[i][1] + 4, 2, 2);
+        ctx.rect(lasers[i][0] - 1, lasers[i][1] + 6, 2, 2);
+
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+        ctx.closePath();
+      }
+      this.state.lasers[i][1] += 4;
+      this.state.lasers[i][2] = !this.state.lasers[i][2];
+      if (this.state.lasers[i][1] > canvas.height) {
+        this.state.lasers.splice(i, 1);
+      }
+    }
+  }
+
   collisionDetection() {
     const {
       alien1: { width, height },
@@ -676,7 +758,10 @@ class Invaders extends Component {
       columns,
       bullets,
       barriers,
+      lasers,
+      ship,
     } = this.state;
+    //bullet vs alien
     for (let c = 0; c < columns; c++) {
       for (let r = 0; r < rows; r++) {
         let a = aliens[c][r];
@@ -696,6 +781,27 @@ class Invaders extends Component {
         }
       }
     }
+    //laser vs. barrier
+    for (let bar = 0; bar < barriers.length; bar++) {
+      for (let brick = 0; brick < barriers[bar].length; brick++) {
+        let b = barriers[bar][brick];
+        if (b[2] === 1) {
+          for (let i = 0; i < lasers.length; i++) {
+            if (
+              lasers[i][0] > b[0] - 1 &&
+              lasers[i][0] < b[0] + 8 + 1 &&
+              lasers[i][1] > b[1] - 1 &&
+              lasers[i][1] < b[1] + 8 + 1
+            ) {
+              this.state.lasers.splice(i, 1);
+              this.state.barriers[bar][brick][2] = 0;
+              this.state.debris.push([b[0], b[1]]);
+            }
+          }
+        }
+      }
+    }
+    //bullet vs barrier
     for (let bar = 0; bar < barriers.length; bar++) {
       for (let brick = 0; brick < barriers[bar].length; brick++) {
         let b = barriers[bar][brick];
@@ -710,10 +816,28 @@ class Invaders extends Component {
               this.state.bullets.splice(i, 1);
               this.state.barriers[bar][brick][2] = 0;
               this.state.debris.push([b[0], b[1]]);
-              console.log(this.state.debris);
             }
           }
         }
+      }
+    }
+
+    //laser vs ship
+
+    for (let i = 0; i < lasers.length; i++) {
+      if (
+        lasers[i][0] > ship.shipX &&
+        lasers[i][0] < ship.shipX + ship.shipWidth &&
+        lasers[i][1] > ship.shipY &&
+        lasers[i][1] < ship.shipY + ship.shipHeight
+      ) {
+        this.state.lasers.splice(i, 1);
+        this.state.ship.alive = false;
+        this.state.ship.explosion.push([
+          this.state.ship.shipX,
+          this.state.ship.shipY,
+          true,
+        ]);
       }
     }
   }
@@ -861,6 +985,113 @@ class Invaders extends Component {
       ctx.fillStyle = 'black';
       ctx.fill();
       ctx.closePath();
+    }
+  }
+
+  fireLaser() {
+    const copy = [...this.state.aliens];
+
+    let bottomRow = [];
+    for (let i = 0; i < copy.length; i++) {
+      for (let j = copy[i].length - 1; j > -1; j--) {
+        if (copy[i][j].status === 1) {
+          bottomRow.push(copy[i][j]);
+          break;
+        }
+      }
+    }
+
+    if (bottomRow.length) {
+      let alienCopy;
+      alienCopy = bottomRow.find((alien) => {
+        if (
+          alien.x + 12 < this.state.ship.shipX + this.state.ship.shipWidth &&
+          alien.x + 12 > this.state.ship.shipX
+        ) {
+          return alien;
+        }
+      });
+
+      console.log(alienCopy);
+
+      if (!alienCopy) {
+        alienCopy = bottomRow[Math.floor(Math.random() * bottomRow.length)];
+      }
+      this.state.lasers.push([alienCopy.x + 12, alienCopy.y + 14, true]);
+    }
+  }
+
+  drawShipExplosion() {
+    const {
+      ctx,
+      ship: { explosion },
+    } = this.state;
+    if (explosion.length) {
+      ctx.beginPath();
+      const x = explosion[0][0];
+      const y = explosion[0][1];
+
+      //ship husk
+      ctx.rect(x + 2, y + 6, 24, 2);
+      ctx.rect(x, y + 4, 8, 2);
+      ctx.rect(x + 10, y + 4, 12, 2);
+      ctx.rect(x + 24, y + 4, 4, 2);
+      ctx.rect(x + 2, y + 2, 4, 2);
+      ctx.rect(x + 12, y + 2, 8, 2);
+      ctx.rect(x + 12, y, 6, 2);
+      ctx.rect(x + 14, y - 2, 2, 2);
+      ctx.fillStyle = 'green';
+      ctx.fill();
+      ctx.closePath();
+
+      // explosion1
+      if (this.state.frameCount < 20) {
+        ctx.beginPath();
+        ctx.rect(x + 22, y + 2, 2, 2);
+        ctx.rect(x + 20, y + 0, 2, 2);
+        ctx.rect(x + 18, y - 4, 2, 2);
+        ctx.rect(x + 22, y - 4, 2, 2);
+        ctx.rect(x + 26, y - 2, 2, 2);
+        ctx.rect(x + 20, y - 8, 2, 2);
+        ctx.rect(x + 12, y - 6, 2, 2);
+
+        ctx.rect(x + 10, y - 2, 2, 2);
+        ctx.rect(x + 8, y - 6, 2, 2);
+
+        ctx.rect(x + 8, y + 2, 2, 2);
+        ctx.rect(x + 6, y + 0, 2, 2);
+
+        ctx.rect(x + 2, y - 2, 2, 2);
+        ctx.rect(x - 2, y - 2, 2, 2);
+        ctx.rect(x, y - 6, 2, 2);
+
+        ctx.fillStyle = 'orange';
+        ctx.fill();
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.rect(x + 24, y + 0, 2, 2);
+        ctx.rect(x + 18, y - 16, 2, 2);
+        ctx.rect(x + 16, y - 14, 2, 2);
+        ctx.rect(x + 24, y - 6, 2, 2);
+        ctx.rect(x + 28, y - 4, 2, 2);
+        ctx.rect(x + 22, y - 10, 2, 2);
+        ctx.rect(x + 12, y - 14, 2, 2);
+
+        ctx.rect(x + 8, y - 4, 2, 2);
+        ctx.rect(x + 6, y - 8, 2, 2);
+
+        ctx.rect(x + 6, y - 8, 2, 2);
+        ctx.rect(x + 4, y - 12, 2, 2);
+
+        ctx.rect(x, y - 4, 2, 2);
+        ctx.rect(x - 4, y - 4, 2, 2);
+        ctx.rect(x - 2, y - 8, 2, 2);
+
+        ctx.fillStyle = 'orange';
+        ctx.fill();
+        ctx.closePath();
+      }
     }
   }
 
