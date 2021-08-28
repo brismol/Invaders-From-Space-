@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 class Invaders extends Component {
   constructor() {
     super();
 
     this.state = {
+      interval: {},
       round: 1,
       alienMoveCounter: 0,
       previousStartingInterval: 40,
@@ -204,6 +206,9 @@ class Invaders extends Component {
     this.drawShipExplosion = this.drawShipExplosion.bind(this);
     this.drawScore = this.drawScore.bind(this);
     this.reset = this.reset.bind(this);
+    this.drawLives = this.drawLives.bind(this);
+    this.gameOver = this.gameOver.bind(this);
+    this.drawBoard = this.drawBoard.bind(this);
   }
 
   //for barries, when they dissapear just replace them with a wider
@@ -252,7 +257,7 @@ class Invaders extends Component {
   }
 
   keyPressHandler(e) {
-    if (e.key == 'z' && this.state.bulletReady) {
+    if (e.key == 'z' && this.state.bulletReady && this.state.ship.alive) {
       this.state.bullets.push([
         this.state.ship.shipX + this.state.ship.shipWidth / 2 - 2,
         this.state.canvas.height - (this.state.ship.shipHeight + 52),
@@ -269,6 +274,39 @@ class Invaders extends Component {
     this.state.frameCount++;
     this.state.laserCount++;
     let { ctx } = this.state;
+
+    this.drawBoard();
+
+    this.drawAliens(inGame);
+
+    this.moveAliens();
+    this.drawShip();
+    this.drawBullets();
+    this.collisionDetection();
+    this.drawExplosions();
+    this.drawBarriers();
+    this.drawDebris();
+    if (this.state.laserCount === 40) {
+      this.state.laserCount = 0;
+      if (!Math.round(Math.random() * 2)) {
+        this.fireLaser();
+      }
+    }
+    this.drawLasers();
+    this.drawShipExplosion();
+    this.drawScore();
+    this.drawLives();
+    if (this.state.frameCount === 40) {
+      this.state.frameCount = 0;
+    }
+    if (this.state.liveAliens === 0) {
+      this.reset();
+    }
+  }
+
+  drawBoard() {
+    const { ctx } = this.state;
+
     ctx.rect(0, 0, this.state.canvas.width, this.state.canvas.height);
 
     ctx.fillStyle = 'black';
@@ -329,31 +367,6 @@ class Invaders extends Component {
     ctx.clearRect(360, 160, 2, 2);
 
     ctx.clearRect(0, this.state.canvas.height - 40, this.state.canvas.width, 2);
-
-    this.drawAliens(inGame);
-
-    this.moveAliens();
-    this.drawShip();
-    this.drawBullets();
-    this.collisionDetection();
-    this.drawExplosions();
-    this.drawBarriers();
-    this.drawDebris();
-    if (this.state.laserCount === 40) {
-      this.state.laserCount = 0;
-      if (!Math.round(Math.random() * 2)) {
-        this.fireLaser();
-      }
-    }
-    this.drawLasers();
-    this.drawShipExplosion();
-    this.drawScore();
-    if (this.state.frameCount === 40) {
-      this.state.frameCount = 0;
-    }
-    if (this.state.liveAliens === 0) {
-      this.reset();
-    }
   }
 
   moveAliens() {
@@ -862,7 +875,8 @@ class Invaders extends Component {
         lasers[i][0] > ship.shipX &&
         lasers[i][0] < ship.shipX + ship.shipWidth &&
         lasers[i][1] > ship.shipY &&
-        lasers[i][1] < ship.shipY + ship.shipHeight
+        lasers[i][1] < ship.shipY + ship.shipHeight &&
+        this.state.ship.alive
       ) {
         this.state.lasers.splice(i, 1);
         this.state.ship.alive = false;
@@ -871,6 +885,15 @@ class Invaders extends Component {
           this.state.ship.shipY,
           true,
         ]);
+        setTimeout(() => {
+          this.state.lives--;
+          if (this.state.lives > -1) {
+            this.state.ship.alive = true;
+            this.state.ship.explosion = [];
+          } else {
+            this.gameOver();
+          }
+        }, 2000);
       }
     }
   }
@@ -975,6 +998,38 @@ class Invaders extends Component {
     }
   }
 
+  gameOver() {
+    console.log('gameover');
+    clearInterval(this.state.interval);
+    this.drawBoard();
+    const { ctx, canvas } = this.state;
+
+    ctx.font = '16px Arial';
+    ctx.fillStyle = 'White';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'White';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      `Thanks for playing ${this.props.username}`,
+      canvas.width / 2,
+      canvas.height / 2
+    );
+
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'White';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      `Score: ${this.state.score}`,
+      canvas.width / 2,
+      canvas.height / 2 + 40
+    );
+
+    // ctx.fillText('Score: ' + this.state.score, 8, 20);
+  }
+
   drawBarriers() {
     let { ctx, barriers, barrierPadding } = this.state;
 
@@ -1072,7 +1127,8 @@ class Invaders extends Component {
       alienCopy = bottomRow.find((alien) => {
         if (
           alien.x + 12 < this.state.ship.shipX + this.state.ship.shipWidth &&
-          alien.x + 12 > this.state.ship.shipX
+          alien.x + 12 > this.state.ship.shipX &&
+          this.state.ship.alive
         ) {
           return alien;
         }
@@ -1167,18 +1223,36 @@ class Invaders extends Component {
     ctx.fillText('Score: ' + this.state.score, 8, 20);
   }
 
+  drawLives() {
+    const { ctx, canvas } = this.state;
+    const y = canvas.height - 20;
+    let x = 14;
+    for (let i = this.state.lives; i > 0; i--) {
+      ctx.beginPath();
+      ctx.rect(x, y, 28, 6);
+      ctx.rect(x + 2, y - 2, 24, 2);
+      ctx.rect(x + 2, y + 6, 24, 2);
+      ctx.rect(x + 11, y - 6, 6, 4);
+      ctx.rect(x + 13, y - 8, 2, 2);
+      ctx.fillStyle = 'green';
+      ctx.fill();
+      ctx.closePath();
+      x += 36;
+    }
+  }
+
   render() {
     return (
       <div>
         <div className="flex">
           <button
             onClick={() => {
-              setInterval(() => {
+              this.state.interval = setInterval(() => {
                 this.draw(true);
               }, 10);
             }}
           >
-            Play!
+            New Game
           </button>
         </div>
         <canvas
@@ -1192,4 +1266,10 @@ class Invaders extends Component {
   }
 }
 
-export default Invaders;
+const mapState = (state) => {
+  return {
+    username: state.auth.username,
+  };
+};
+
+export default connect(mapState)(Invaders);
