@@ -5,8 +5,10 @@ import { logout } from '../store';
 
 const Navbar = ({ handleClick, isLoggedIn }) => (
   <div>
-    <h1>Classic Arcade</h1>
-    <nav>
+    <nav className="flex">
+      <div>
+        <h4>Classic Arcade</h4>
+      </div>
       {isLoggedIn ? (
         <div>
           {/* The navbar will show these links after you log in */}
