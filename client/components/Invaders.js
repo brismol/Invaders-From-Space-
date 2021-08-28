@@ -5,6 +5,14 @@ class Invaders extends Component {
     super();
 
     this.state = {
+      round: 1,
+      alienMoveCounter: 0,
+      previousStartingInterval: 40,
+      moveInterval: 40,
+      liveAliens: 55,
+      lives: 2,
+      borderTop: 24,
+      score: 0,
       canvas: {},
       ctx: {},
       padding: 10,
@@ -194,7 +202,8 @@ class Invaders extends Component {
     this.drawLasers = this.drawLasers.bind(this);
     this.fireLaser = this.fireLaser.bind(this);
     this.drawShipExplosion = this.drawShipExplosion.bind(this);
-    // this.practiceDraw = this.practiceDraw.bind(this);
+    this.drawScore = this.drawScore.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   //for barries, when they dissapear just replace them with a wider
@@ -215,7 +224,7 @@ class Invaders extends Component {
 
     //ship Mount
     this.state.ship.shipX = (canvas.width - this.state.ship.shipWidth) / 2;
-    this.state.ship.shipY = canvas.height - this.state.ship.shipHeight - 4;
+    this.state.ship.shipY = canvas.height - this.state.ship.shipHeight - 44;
 
     //control mount
     window.addEventListener('keydown', this.keyDownHandler, false);
@@ -246,7 +255,7 @@ class Invaders extends Component {
     if (e.key == 'z' && this.state.bulletReady) {
       this.state.bullets.push([
         this.state.ship.shipX + this.state.ship.shipWidth / 2 - 2,
-        this.state.canvas.height - (this.state.ship.shipHeight + 12),
+        this.state.canvas.height - (this.state.ship.shipHeight + 52),
       ]);
       this.state.bulletReady = false;
       setTimeout(() => {
@@ -256,7 +265,9 @@ class Invaders extends Component {
   }
 
   draw(inGame) {
+    this.state.alienMoveCounter++;
     this.state.frameCount++;
+    this.state.laserCount++;
     let { ctx } = this.state;
     ctx.rect(0, 0, this.state.canvas.width, this.state.canvas.height);
 
@@ -317,6 +328,8 @@ class Invaders extends Component {
     ctx.clearRect(240, 180, 2, 2);
     ctx.clearRect(360, 160, 2, 2);
 
+    ctx.clearRect(0, this.state.canvas.height - 40, this.state.canvas.width, 2);
+
     this.drawAliens(inGame);
 
     this.moveAliens();
@@ -326,21 +339,29 @@ class Invaders extends Component {
     this.drawExplosions();
     this.drawBarriers();
     this.drawDebris();
+    if (this.state.laserCount === 40) {
+      this.state.laserCount = 0;
+      if (!Math.round(Math.random() * 2)) {
+        this.fireLaser();
+      }
+    }
     this.drawLasers();
     this.drawShipExplosion();
+    this.drawScore();
+    if (this.state.frameCount === 40) {
+      this.state.frameCount = 0;
+    }
+    if (this.state.liveAliens === 0) {
+      this.reset();
+    }
   }
 
   moveAliens() {
     const { moveCount } = this.state;
 
     //num is alien speed
-    if (this.state.frameCount === 40) {
-      this.state.laserCount++;
-      if (this.state.laserCount === 4) {
-        this.state.laserCount = 0;
-        this.fireLaser();
-      }
-      this.state.frameCount = 0;
+    if (this.state.alienMoveCounter === this.state.moveInterval) {
+      this.state.alienMoveCounter = 0;
       //still gotta mess with the numbers
       if (this.state.monsters.rowCount === 4) {
         this.state.monsters.rowCount = -1;
@@ -361,6 +382,7 @@ class Invaders extends Component {
             break;
           case -1:
             this.state.monsters.rows['4'].y += this.state.monsters.my;
+            this.state.moveInterval = Math.round(this.state.moveInterval * 0.8);
             break;
 
           default:
@@ -411,11 +433,12 @@ class Invaders extends Component {
       monsters: { rowCount },
     } = this.state;
     const w = this.state.padding;
+    const t = this.state.borderTop;
     for (let c = 0; c < this.state.columns; c++) {
       for (let r = 0; r < this.state.rows; r++) {
         if (aliens[c][r].status === 1) {
           let alienX = c * (width + w) + w;
-          let alienY = r * (height + w) + w;
+          let alienY = r * (height + w) + t;
           if (r === 0) {
             alienY += this.state.monsters.rows['4'].y;
             this.state.aliens[c][r].y = alienY;
@@ -776,6 +799,16 @@ class Invaders extends Component {
               this.state.bullets.splice(i, 1);
               this.state.aliens[c][r].status = 0;
               this.state.explosions.push([a.x, a.y, 25]);
+              let score = 10;
+
+              if (r === 2 || r === 1) {
+                score = 20;
+              }
+              if (r === 0) {
+                score = 30;
+              }
+              this.state.score += score;
+              this.state.liveAliens--;
             }
           }
         }
@@ -839,6 +872,39 @@ class Invaders extends Component {
           true,
         ]);
       }
+    }
+  }
+
+  reset() {
+    if (this.state.liveAliens === 0) {
+      for (let c = 0; c < this.state.columns; c++) {
+        this.state.aliens[c] = [];
+        for (let r = 0; r < this.state.rows; r++) {
+          this.state.aliens[c][r] = { x: 0, y: 0, status: 1 };
+        }
+      }
+      this.state.monsters = {
+        rowCount: 0,
+        rows: {
+          0: { x: 0, y: 0 },
+          1: { x: 0, y: 0 },
+          2: { x: 0, y: 0 },
+          3: { x: 0, y: 0 },
+          4: { x: 0, y: 0 },
+        },
+        x: 0,
+        y: 0,
+        mx: 11,
+        my: 14,
+      };
+      this.state.moveCount = 0;
+      this.state.moveInterval = Math.round(
+        this.state.previousStartingInterval * 0.9
+      );
+      this.state.previousStartingInterval = this.state.moveInterval;
+      console.log(this.state.previousStartingInterval);
+      this.state.frameCount = 0;
+      this.state.liveAliens = this.state.columns * this.state.rows;
     }
   }
 
@@ -1012,8 +1078,6 @@ class Invaders extends Component {
         }
       });
 
-      console.log(alienCopy);
-
       if (!alienCopy) {
         alienCopy = bottomRow[Math.floor(Math.random() * bottomRow.length)];
       }
@@ -1095,23 +1159,33 @@ class Invaders extends Component {
     }
   }
 
+  drawScore() {
+    const { ctx } = this.state;
+
+    ctx.font = '12px Arial';
+    ctx.fillStyle = 'White';
+    ctx.fillText('Score: ' + this.state.score, 8, 20);
+  }
+
   render() {
     return (
       <div>
-        <button
-          onClick={() => {
-            setInterval(() => {
-              this.draw(true);
-            }, 10);
-          }}
-        >
-          Play!
-        </button>
+        <div className="flex">
+          <button
+            onClick={() => {
+              setInterval(() => {
+                this.draw(true);
+              }, 10);
+            }}
+          >
+            Play!
+          </button>
+        </div>
         <canvas
           id="MyCanvas"
           ref={this.canvasRef}
           width="500"
-          height="340"
+          height="380"
         ></canvas>
       </div>
     );
