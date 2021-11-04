@@ -1254,6 +1254,11 @@ class Invaders extends Component {
           >
             New Game
           </button>
+          <div>
+            <h3>Click the New Game button to start game</h3>
+            <h3>Left and Right arrows move spaceship</h3>
+            <h3>Press Z to fire</h3>
+          </div>
         </div>
         <canvas
           id="MyCanvas"
